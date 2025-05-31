@@ -1,0 +1,419 @@
+body {
+    background: #010b17;
+    color: #0ff;
+    font-family: 'Fira Mono', monospace;
+    min-height: 100vh;
+}
+.terminal-window {
+    background: rgba(5,19,34,0.96);
+    border-radius: 14px;
+    border: 2px solid #0ff;
+    box-shadow: 0 0 20px #0ff4, 0 0 6px #39f2;
+    margin: 40px auto;
+    max-width: 950px;
+    padding: 32px 28px 18px 28px;
+    position: relative;
+    min-height: 600px;
+}
+.matrix-bg {
+    position: fixed; z-index: 0; top: 0; left: 0;
+    width: 100vw; height: 100vh; pointer-events: none;
+}
+.glitch {
+    font-size: 2.7em;
+    font-family: 'Share Tech Mono', monospace;
+    color: #00ffea;
+    text-shadow: 0 0 14px #3ef7, 2px 0 #0ff, -2px 0 #00ffd5;
+    position:relative;
+    display:inline-block;
+    animation: flicker 1.5s infinite alternate;
+}
+@keyframes flicker {
+    0% {opacity: 1;}
+    48% {opacity: 1;}
+    50% {opacity: 0.7;}
+    54% {opacity: 1;}
+    100% {opacity: 1;}
+}
+.prompt { color: #0ff; }
+.btn-neon {
+    background: none;
+    color: #0ff;
+    border: 1px solid #0ff;
+    box-shadow: 0 0 12px #0ff7;
+    border-radius: 4px;
+    margin: 1px 2px;
+    font-weight: bold;
+    transition: background 0.16s, color 0.18s, box-shadow 0.15s;
+}
+.btn-neon:hover {
+    background: #0ff;
+    color: #010b17;
+    box-shadow: 0 0 24px #0ffb;
+}
+.project-card {
+    background: #010e24;
+    border: 1.5px solid #00ffd5;
+    border-radius: 8px;
+    box-shadow: 0 0 12px #0ff2, 0 0 4px #39f2;
+    margin-bottom: 20px;
+    padding: 18px 16px 12px 16px;
+    transition: transform 0.13s, box-shadow 0.13s;
+    color: #0ff;
+}
+.project-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 32px #0ff9, 0 0 8px #39f8;
+    border-color: #00e1ff;
+}
+.project-card a { color: #0ff; text-decoration: underline; }
+.project-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #0ff;
+    text-shadow: 0 0 8px #0ff6;
+}
+.section-title {
+    color: #00ffd5;
+    font-size: 1.3em;
+    margin: 28px 0 16px 0;
+    font-family: 'Fira Mono', monospace;
+    text-shadow: 0 0 11px #0ff8;
+}
+.footer-prompt {
+    color: #0ff;
+    font-size: 1.1em;
+}
+.timeline {
+    border-left: 2px solid #00ffd5;
+    margin: 0 0 24px 10px;
+    padding-left: 24px;
+}
+.timeline-entry {
+    margin-bottom: 26px;
+    position: relative;
+}
+.timeline-entry::before {
+    content: '';
+    position: absolute;
+    left: -31px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    background: #00ffd5;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #00ffd599;
+}
+.timeline-title {
+    font-weight: bold;
+    font-size: 1.09em;
+    color: #00ffd5;
+}
+.timeline-company, .timeline-school {
+    color: #8ff;
+    font-size: 1.02em;
+    font-style: italic;
+}
+.timeline-date {
+    color: #0ff;
+    font-size: 0.97em;
+}
+.timeline-desc {
+    color: #b3f6ff;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+.edu-degree {
+    font-weight: 600;
+    color: #00ffd5;
+}
+.edu-grade {
+    color: #0ff;
+    font-size: 0.97em;
+}
+.skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 12px 0 18px 0;
+    padding: 0;
+    list-style: none;
+}
+.skills-list li {
+    background: #001e2a;
+    border: 1px solid #00ffd5;
+    color: #0ff;
+    border-radius: 13px;
+    padding: 6px 15px;
+    font-size: 1em;
+    margin-bottom: 3px;
+    font-weight: 500;
+    box-shadow: 0 0 8px #00ffd533;
+}
+.exp-filter-row {
+    margin-bottom: 18px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.exp-filter-btn {
+    background: #001e2a;
+    color: #00ffd5;
+    border: 1px solid #00ffd5;
+    font-family: inherit;
+    border-radius: 10px;
+    padding: 6px 16px;
+    font-size: 1em;
+    font-weight: 500;
+    margin-bottom: 3px;
+    box-shadow: 0 0 6px #00ffd522;
+    transition: background 0.13s, color 0.13s, border 0.13s;
+    cursor: pointer;
+}
+.exp-filter-btn.active,
+.exp-filter-btn:focus,
+.exp-filter-btn:hover {
+    background: #00ffd5;
+    color: #010b17;
+    border: 1.5px solid #00ffd5;
+    outline: none;
+}
+.exp-group-label {
+    color: #00ffd5;
+    font-size: 1.07em;
+    font-weight: bold;
+    margin-bottom: 7px;
+    margin-top: 14px;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 7px #00ffd588;
+}
+.exp-group {
+    margin-bottom: 18px;
+}
+.navbar-neon {
+    background: rgba(5,27,34,0.96);
+    border-bottom: 2px solid #00ffd5;
+    box-shadow: 0 0 8px #00ffd5a0;
+    font-family: 'Fira Mono', monospace;
+    z-index: 10;
+    margin-bottom: 0;
+}
+.navbar-brand {
+    color: #0ff !important;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.5em;
+    text-shadow: 0 0 8px #00ffd5c0;
+    letter-spacing: 0.03em;
+}
+.nav-link {
+    color: #0ff !important;
+    font-weight: bold;
+    margin-right: 1em;
+    transition: color 0.16s;
+    text-shadow: 0 0 8px #00ffd5;
+}
+.nav-link.active, .nav-link:focus, .nav-link:hover {
+    color: #fff !important;
+    text-shadow: 0 0 16px #00ffd5, 0 0 8px #39f;
+}
+.nav-item .nav-link.selected {
+    background: #00ffd5 !important;
+    color: #010b17 !important;
+    border-radius: 8px;
+    text-shadow: none;
+}
+
+#section-contact {
+  position:relative;
+  overflow:hidden;
+  min-height: 550px;
+}
+.holo-cylinder-bg {
+  pointer-events:none;
+  position: absolute;
+  left:0; top:0; width:100%; height:100%;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0,255,213,0.04) 0px,
+    rgba(0,255,213,0.07) 2px,
+    transparent 6px,
+    transparent 18px
+  );
+  animation: scanlines-move 2.8s linear infinite;
+}
+@keyframes scanlines-move {
+  0% { background-position-y: 0;}
+  100% { background-position-y: 18px;}
+}
+.holo-cylinder-portal {
+  min-height: 420px;
+  justify-content: center;
+  z-index: 2;
+  position:relative;
+}
+.holo-cylinder.no-outline {
+  margin-top: 40px;
+  position: relative;
+  width: 300px;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: none !important;
+  /* NO outline, NO border, no background */
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible;
+  z-index: 2;
+  /* 3d glass effect removed */
+  backdrop-filter: none !important;
+}
+.holo-cylinder-glow {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 220px;
+  height: 360px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, #00ffd555 40%, #00141a00 100%);
+  opacity: 0.77;
+  z-index: 1;
+  pointer-events: none;
+  filter: blur(8px);
+  animation: holo-glow-cyl 2.7s ease-in-out infinite alternate;
+}
+@keyframes holo-glow-cyl {
+  0% { opacity: .7; }
+  100% { opacity: 1; }
+}
+.holo-cylinder-top, .holo-cylinder-bottom {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  height: 48px;
+  background: radial-gradient(ellipse at center, #00ffd5cc 50%, #01181e 100%);
+  border-radius: 50%;
+  z-index: 3;
+  box-shadow: 0 0 15px #00ffd5bb, 0 0 2px #39fa;
+  pointer-events: none;
+}
+.holo-cylinder-top {
+  top: -24px;
+  border-bottom: 2.5px solid #00ffd5;
+  opacity: 0.92;
+  filter: blur(1.2px);
+}
+.holo-cylinder-bottom {
+  bottom: -22px;
+  border-top: 2.5px solid #00ffd5;
+  opacity: 0.85;
+  filter: blur(2.2px);
+}
+.holo-cylinder-beam {
+  position:absolute;
+  left:50%; bottom:-16px;
+  transform: translateX(-50%);
+  width: 170px;
+  height: 42px;
+  background: radial-gradient(ellipse at center, #00ffd588 60%, #01181e 100%);
+  border-radius: 50%;
+  filter: blur(2.2px);
+  box-shadow: 0 0 38px #00ffd5bb, 0 0 8px #39f2;
+  z-index: 0;
+  animation: beam-glow 2s ease-in-out infinite alternate;
+}
+@keyframes beam-glow {
+  0% { box-shadow: 0 0 42px #00ffd5bb, 0 0 8px #39f2;}
+  100% { box-shadow: 0 0 70px #00ffd5, 0 0 12px #39f;}
+}
+.holo-cylinder-content {
+  position: relative;
+  margin-top: 58px;
+  margin-bottom: 48px;
+  width: 100%;
+  z-index: 5;
+  gap: 40px;
+}
+.holo-cylinder-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 78px; height: 78px;
+  text-decoration: none;
+  color: #00ffd5;
+  background: rgba(15,30,40,0.96);
+  border: 3px solid #00ffd5cc;
+  border-radius: 50%;
+  box-shadow: 0 0 28px #00ffd588, 0 0 8px #39f2;
+  font-size: 2.45em;
+  transition: box-shadow 0.16s, border-color 0.16s, background 0.13s, color 0.14s, transform 0.18s;
+  position: relative;
+  will-change: transform;
+  z-index: 5;
+  overflow: visible;
+  margin: 0 auto;
+  animation: holo-bob2 3.2s ease-in-out infinite;
+}
+.holo-cylinder-btn .bi { pointer-events:none; }
+.holo-cylinder-btn .holo-cylinder-label {
+  opacity: 0;
+  pointer-events:none;
+  color: #fff;
+  font-size: 1em;
+  letter-spacing: 0.06em;
+  font-family: inherit;
+  margin-top: 8px;
+  background: rgba(0,255,213,0.16);
+  padding: 2px 18px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px #00ffd5;
+  text-shadow: 0 0 8px #00ffd5;
+  position: absolute;
+  top: -39px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.91);
+  transition: opacity 0.22s, transform 0.19s;
+  z-index: 15;
+}
+.holo-cylinder-btn:hover,
+.holo-cylinder-btn:focus {
+  color: #01181e;
+  background: #00ffd5;
+  border-color: #fff;
+  box-shadow: 0 0 44px #00ffd5, 0 0 16px #39f8;
+  outline: none;
+  transform: scale(1.09) translateY(-6px);
+}
+.holo-cylinder-btn:hover .holo-cylinder-label,
+.holo-cylinder-btn:focus .holo-cylinder-label {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.11);
+}
+@keyframes holo-bob2 {
+  0% { transform: translateY(0) scale(1);}
+  30% { transform: translateY(-12px) scale(1.06);}
+  50% { transform: translateY(-3px) scale(1.01);}
+  75% { transform: translateY(-8px) scale(0.96);}
+  100% { transform: translateY(0) scale(1);}
+}
+.holo-contact-note {
+  color:#8ff;
+  font-size:1.1em;
+  text-shadow:0 0 8px #00ffd5;
+  z-index:3;
+  margin-top: 36px !important;
+}
+@media (max-width: 600px) {
+  .holo-cylinder.no-outline { width: 96vw; max-width: 320px; min-height: 320px; border-radius: 65px/28px;}
+  .holo-cylinder-content { gap: 18px; margin-top: 28px; margin-bottom: 26px;}
+  .holo-cylinder-btn { width: 40px; height: 40px; font-size: 1.18em;}
+  .holo-cylinder-btn .holo-cylinder-label { font-size:.91em; top:-22px; padding:2px 8px;}
+  .holo-cylinder-top, .holo-cylinder-bottom { height: 23px;}
+  .holo-cylinder-top { top: -10px;}
+  .holo-cylinder-bottom { bottom: -8px;}
+  .holo-cylinder-glow { width: 100px; height: 210px;}
+  .holo-cylinder-beam { width:60px; height:16px; left:50%; bottom:-8px;}
+}
