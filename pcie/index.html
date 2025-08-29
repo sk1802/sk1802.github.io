@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>PCIe LTSSM States — Complete Interactive Diagram with Detailed Information</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  :root{--bg:#0f1724;--card:#071029;--accent:#60a5fa;--muted:#94a3b8;--good:#34d399;--warn:#f97316}
+  html,body{height:100%;margin:0;padding:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#071024 0%, #081427 60%);color:#e6eef8;overflow-x:hidden}
+  .container{margin:0;padding:0;height:100vh;width:100%;max-width:100vw;box-sizing:border-box}
+  .panel{display:grid;grid-template-columns:1fr 380px;gap:0;height:100vh}
+  .canvas{background:linear-gradient(180deg,#071024 0%, #06111b 80%);padding:16px;position:relative;overflow:hidden}
+  .controls{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:6px 10px;border-radius:8px}
+  .btn-primary-ghost{border-color:var(--accent);color:var(--accent)}
+  /* SVG + nodes */
+  svg{width:100%;height:calc(100% - 48px);display:block}
+  .node rect{rx:12;fill:#071427;stroke:rgba(255,255,255,0.06);stroke-width:1.5;transition:all 0.3s ease}
+  .node text.title{font-size:14px;fill:#e6eef8;font-weight:700}
+  .node text.sub{font-size:12px;fill:var(--muted)}
+  .substate{opacity:0;pointer-events:none;transition:all 0.3s ease}
+  .substate.visible{opacity:1;pointer-events:auto}
+  .substate rect{rx:8;fill:#0a1832;stroke:rgba(255,255,255,0.08);stroke-width:1}
+  .substate text{font-size:11px;fill:#c9d1d9;font-weight:500}
+  .node.expanded rect{stroke:var(--accent);stroke-width:2;fill:#0a1832}
+  .edge{stroke:rgba(255,255,255,0.12);stroke-width:2;fill:none;marker-end:url(#arrow);}
+  .edge.label{font-size:11px;fill:var(--muted)}
+  .node.selected rect{stroke:var(--accent);filter:drop-shadow(0 6px 18px rgba(96,165,250,0.06));}
+  .node.predecessor rect{stroke:var(--good);stroke-width:2}
+  .node.successor rect{stroke:var(--warn);stroke-width:2}
+  .edge.active{stroke:var(--accent);stroke-width:3;animation:dash 1s linear infinite}
+  .edge.pre{stroke:var(--good);stroke-width:3}
+  .edge.suc{stroke:var(--warn);stroke-width:3}
+  @keyframes dash{  to { stroke-dashoffset: -40 } }
+  /* Sidebar */
+  .sidebar{background:linear-gradient(180deg,#07142720,#07142710);padding:16px;border-left:1px solid rgba(255,255,255,0.06);overflow-y:auto}
+  .sidebar h4{margin-top:0;font-size:14px}
+  .muted{color:var(--muted)}
+  .list{list-style:none;padding:0;margin:0}
+  .list li{padding:4px 6px;border-radius:6px;margin-bottom:4px;background:rgba(255,255,255,0.02);font-size:11px}
+  .footerNote{position:absolute;left:20px;bottom:12px;color:var(--muted);font-size:11px;max-width:calc(100% - 400px)}
+  @media (max-width:1000px){.panel{grid-template-columns:1fr}} 
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="panel">
+    <div class="canvas">
+      <div class="controls">
+        <button id="playBtn" class="btn-ghost">Play Walkthrough</button>
+        <button id="resetBtn" class="btn-ghost">Reset</button>
+        <div style="margin-left:auto" class="muted">Click for state details • Green=predecessors • Orange=successors</div>
+      </div>
+
+      <svg id="svg" viewBox="0 0 1600 800" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" viewBox="0 -5 10 10" refX="10" refY="0" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M0,-4 L10,0 L0,4" fill="rgba(255,255,255,0.12)" />
+          </marker>
+        </defs>
+        <!-- edges and nodes rendered by script -->
+      </svg>
+      <div class="footerNote">Comprehensive PCIe LTSSM State Machine: Training (Detect→Polling→Config) → Operational (L0/L0s/L1/L2) → Recovery/Reset States. Enhanced with detailed timing, triggers, and power management information.</div>
+    </div>
+
+    <div class="sidebar">
+      <h4>LTSSM State Details</h4>
+      <div id="stateTitle" style="font-weight:700">(none selected)</div>
+      <div id="stateDesc" class="muted" style="margin-top:6px">Click on any state to see its description and detailed information about substates, timing, and transitions.</div>
+
+      <hr style="border-color:rgba(255,255,255,0.03)" />
+
+      <div style="font-weight:700">Substates & Details</div>
+      <ul id="sublist" class="list muted" style="margin-top:8px"></ul>
+
+      <div style="margin-top:10px;font-weight:700">State Transitions</div>
+      <ul id="translist" class="list muted" style="margin-top:8px"></ul>
+
+      <hr style="border-color:rgba(255,255,255,0.03)" />
+      
+      <div style="font-size:12px;color:var(--muted);margin-top:8px">
+        <div style="margin-bottom:8px"><strong>LTSSM Overview:</strong></div>
+        <div style="margin-bottom:4px">• <strong>Training States:</strong> Detect → Polling → Configuration</div>
+        <div style="margin-bottom:4px">• <strong>Operational States:</strong> L0 (active), L0s/L1/L2 (power save)</div>
+        <div style="margin-bottom:4px">• <strong>Special States:</strong> Recovery, HotReset, Compliance</div>
+        <div style="margin-bottom:8px">• <strong>Error Handling:</strong> Recovery → reconfiguration</div>
+      </div>
+
+      <div style="font-size:12px;color:var(--muted);margin-top:8px">
+        <strong>Key Concepts:</strong><br>
+        <small>LTSSM controls link training, power management, error recovery, and state transitions in PCIe. Each state has specific entry/exit conditions and timeouts.</small>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button id="exportBtn" class="btn-ghost">Export HTML</button>
+        <button id="zoomFit" class="btn-ghost">Fit View</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Full LTSSM nodes with comprehensive state information including substate details
+const nodes = [
+  { 
+    id:'Detect', x:50, y:80, title:'Detect', 
+    desc:'Initial link detect phase — hardware looks for receiver presence. Entry point for all link training. Checks for far-end receiver termination and begins electrical handshake.', 
+    subs:[
+      {name:"Detect.Quiet", desc:"Wait for receiver termination detection and electrical idle"},
+      {name:"Detect.Active", desc:"Transmit detect signal and check for receiver response"}
+    ],
+    purpose: 'Establish basic electrical connection',
+    duration: '12ms typical',
+    conditions: 'Reset, link enable, or recovery from disabled state'
+  },
+  { 
+    id:'Polling', x:320, y:80, title:'Polling', 
+    desc:'Polling for training sequences (TS1/TS2) and speed negotiation. Critical phase for establishing link parameters, speed, width, and lane polarity.', 
+    subs:[
+      {name:"Polling.Active", desc:"Exchange TS1 ordered sets for basic link establishment"},
+      {name:"Polling.Compliance", desc:"Enter compliance testing mode for signal validation"},
+      {name:"Polling.Configuration", desc:"Negotiate link parameters and capabilities"},
+      {name:"Polling.Speed", desc:"Speed negotiation and equalization procedures"}
+    ],
+    purpose: 'Negotiate link speed, width, and basic parameters',
+    duration: '24ms timeout per substate',
+    conditions: 'Successful receiver detection'
+  },
+  { 
+    id:'Configuration', x:620, y:80, title:'Configuration', 
+    desc:'Exchange link width/lanes and complete link configuration. Final negotiation of operational parameters including lane assignments and link width.', 
+    subs:[
+      {name:"Config.Linkwidth.Start", desc:"Begin link width negotiation process"},
+      {name:"Config.Linkwidth.Accept", desc:"Accept proposed link width configuration"},
+      {name:"Config.Lanenum.Wait", desc:"Wait for lane number assignment from partner"},
+      {name:"Config.Lanenum.Accept", desc:"Accept lane number assignments"},
+      {name:"Config.Complete", desc:"Finalize all configuration parameters"},
+      {name:"Config.Idle", desc:"Ready to enter L0 operational state"}
+    ],
+    purpose: 'Finalize all link operational parameters',
+    duration: '32ms timeout total',
+    conditions: 'Successful polling phase completion'
+  },
+  { 
+    id:'Loopback', x:980, y:70, title:'Loopback', 
+    desc:'Diagnostic loopback mode for PHY testing. Used for manufacturing test, debugging, and compliance verification.', 
+    subs:[
+      {name:"Loopback.Entry", desc:"Enter diagnostic loopback test mode"},
+      {name:"Loopback.Active", desc:"Execute loopback patterns and data validation"},
+      {name:"Loopback.Exit", desc:"Exit loopback mode and return to normal operation"}
+    ],
+    purpose: 'Hardware validation and testing',
+    duration: 'Indefinite (test controlled)',
+    conditions: 'Forced entry via configuration registers'
+  },
+  { 
+    id:'Compliance', x:1220, y:80, title:'Compliance', 
+    desc:'Transmit compliance patterns for electrical testing and signal integrity validation.', 
+    subs:[
+      {name:"Compliance.Pattern", desc:"Transmit standardized test patterns for validation"},
+      {name:"Compliance.Receiver", desc:"Test receiver characteristics and signal quality"}
+    ],
+    purpose: 'Signal integrity and electrical compliance testing',
+    duration: 'Indefinite (test controlled)',
+    conditions: 'Forced entry or polling failure'
+  },
+
+  { 
+    id:'Disabled', x:50, y:320, title:'Disabled', 
+    desc:'Link is completely disabled with no electrical activity. Lowest power consumption state.', 
+    subs:[
+      {name:"Disabled", desc:"All transceivers powered down, no link activity"}
+    ],
+    purpose: 'Complete link shutdown for power savings',
+    duration: 'Indefinite until re-enabled',
+    conditions: 'Software disable, fatal error, or power management'
+  },
+  { 
+    id:'L0', x:350, y:320, title:'L0', 
+    desc:'Normal operational state - link is up and actively passing Transaction Layer Packets (TLPs). Full performance and functionality.', 
+    subs:[
+      {name:"L0.Active", desc:"Active data transfer state with full link functionality"},
+      {name:"L0.DataLink", desc:"Data Link Layer actively processing packets"},
+      {name:"L0.Transaction", desc:"Transaction Layer Packet processing active"}
+    ],
+    purpose: 'Normal data transfer and full link operation',
+    duration: 'Active as long as traffic present',
+    conditions: 'Successful configuration or recovery completion'
+  },
+  { 
+    id:'L0s', x:580, y:320, title:'L0s', 
+    desc:'Standby state with transmitter in electrical idle. Rapid wake-up for power savings during short idle periods.', 
+    subs:[
+      {name:"L0s.Entry", desc:"Enter low power mode with transmitter idle"},
+      {name:"L0s.Idle", desc:"Maintain receiver active for quick wake-up"},
+      {name:"L0s.FTS", desc:"Fast Training Sequence for rapid exit to L0"}
+    ],
+    purpose: 'Quick power savings during brief idle periods',
+    duration: 'Microseconds to milliseconds',
+    conditions: 'ASPM L0s entry or idle detection'
+  },
+  { 
+    id:'L1', x:820, y:320, title:'L1', 
+    desc:'ASPM low-power state with longer entry/exit latencies but greater power savings. Common clock reference may be shut down.', 
+    subs:[
+      {name:"L1.Entry", desc:"Negotiate L1 entry with link partner"},
+      {name:"L1.Idle", desc:"Low power idle state with clock gating"},
+      {name:"L1.Substate", desc:"L1.1/L1.2 deeper power saving substates"}
+    ],
+    purpose: 'Moderate power savings with longer wake-up time',
+    duration: 'Milliseconds to seconds',
+    conditions: 'ASPM L1 policy or software request'
+  },
+  { 
+    id:'L2', x:1050, y:320, title:'L2', 
+    desc:'Auxiliary power state - deepest power saving mode. Main power rails may be removed, only auxiliary power maintained.', 
+    subs:[
+      {name:"L2.Entry", desc:"Prepare for deep power down sequence"},
+      {name:"L2.Idle", desc:"Auxiliary power only, main rails off"},
+      {name:"L2.Wake", desc:"PME wake-up detection and processing"}
+    ],
+    purpose: 'Maximum power savings with longest recovery time',
+    duration: 'Seconds to indefinite',
+    conditions: 'System sleep states, software power management'
+  },
+  { 
+    id:'HotReset', x:1280, y:340, title:'Hot Reset', 
+    desc:'Hot reset state for link reset without power cycle. Maintains power while resetting link state machines.', 
+    subs:[
+      {name:"HotReset.Entry", desc:"Begin hot reset sequence while maintaining power"},
+      {name:"HotReset.Exit", desc:"Complete reset and return to Detect state"}
+    ],
+    purpose: 'Reset link operation without power cycling',
+    duration: '100ms typical reset duration',
+    conditions: 'Hot reset signal assertion or error recovery'
+  },
+
+  { 
+    id:'Recovery', x:650, y:520, title:'Recovery', 
+    desc:'Retrain the link after errors, speed changes, or reconfiguration. Critical for maintaining link integrity and performance optimization.', 
+    subs:[
+      {name:"RcvrLock", desc:"Re-establish bit and symbol lock with partner"},
+      {name:"RcvrCfg", desc:"Exchange configuration information"},
+      {name:"RcvrSpeed", desc:"Negotiate new speed if speed change requested"},
+      {name:"RcvrEq", desc:"Perform equalization if required for signal integrity"},
+      {name:"RcvrIdle", desc:"Prepare to return to L0 operational state"}
+    ],
+    purpose: 'Restore link operation after errors or changes',
+    duration: '100ms timeout per substate',
+    conditions: 'Link errors, speed change requests, or retraining'
+  }
+];
+
+// Directed edges with comprehensive transition information
+const edges = [
+  { from:'Detect', to:'Polling', reason:'Receiver detected — begin training', trigger:'Receiver termination detected', time:'< 12ms' },
+  { from:'Polling', to:'Polling', reason:'Continue TS exchanges (TS1/TS2)', trigger:'Speed/width negotiation in progress', time:'< 24ms' },
+  { from:'Polling', to:'Configuration', reason:'TS sequence complete — configure link', trigger:'8 consecutive TS2 received', time:'After TS handshake' },
+  { from:'Configuration', to:'L0', reason:'Configuration Complete — link ready', trigger:'Config.Complete substate reached', time:'< 32ms' },
+
+  { from:'L0', to:'L0s', reason:'ASPM L0s entry — quick power save', trigger:'L0s entry conditions met', time:'< 7μs entry' },
+  { from:'L0s', to:'L0', reason:'L0s exit — resume normal operation', trigger:'New TLP or FTS sequence', time:'< 7μs exit' },
+  
+  { from:'L0', to:'L1', reason:'ASPM L1 entry — deeper power save', trigger:'L1 entry conditions + negotiation', time:'< 64μs entry' },
+  { from:'L1', to:'L0', reason:'L1 exit — wake up to active', trigger:'Wake event or new TLP', time:'< 64μs exit' },
+  
+  { from:'L0', to:'L2', reason:'System power management — deep sleep', trigger:'Software PM request or system sleep', time:'Variable' },
+  { from:'L2', to:'L0', reason:'L2 wake — system wake event', trigger:'PME wake or power state change', time:'> 100ms' },
+
+  { from:'L0', to:'Recovery', reason:'Link error or speed change request', trigger:'Error detected, retrain request, or speed change', time:'Immediate' },
+  { from:'L0s', to:'Recovery', reason:'Error during L0s operation', trigger:'Link error or malfunction', time:'Immediate' },
+  { from:'L1', to:'Recovery', reason:'Error during L1 operation', trigger:'Link error or configuration change', time:'Immediate' },
+  
+  { from:'Recovery', to:'Configuration', reason:'Recovery complete — reconfigure link', trigger:'Recovery substates completed', time:'< 100ms per substate' },
+  { from:'Recovery', to:'L0', reason:'Recovery success — return to normal', trigger:'Successful link retraining', time:'< 500ms total' },
+
+  { from:'Configuration', to:'Loopback', reason:'Forced loopback entry for testing', trigger:'PIPE loopback or test mode register', time:'Immediate' },
+  { from:'Loopback', to:'Configuration', reason:'Exit loopback — return to normal', trigger:'Test completion or mode exit', time:'Test dependent' },
+  
+  { from:'Configuration', to:'Compliance', reason:'Enter compliance for PHY testing', trigger:'Compliance pattern request', time:'Immediate' },
+  { from:'Compliance', to:'Configuration', reason:'Exit compliance — reconfigure', trigger:'Compliance test completion', time:'Test dependent' },
+  
+  { from:'Polling', to:'Compliance', reason:'Polling timeout — enter compliance', trigger:'Polling.Compliance conditions', time:'After 24ms timeout' },
+
+  { from:'Any', to:'HotReset', reason:'Hot reset asserted', trigger:'Hot reset signal or register write', time:'Immediate' },
+  { from:'HotReset', to:'Detect', reason:'Hot reset complete — restart training', trigger:'Reset duration complete (~100ms)', time:'100ms typical' },
+  
+  { from:'Any', to:'Disabled', reason:'Link disable or fatal error', trigger:'Software disable or unrecoverable error', time:'Immediate' },
+  { from:'Disabled', to:'Detect', reason:'Link re-enable — restart training', trigger:'Enable signal or configuration change', time:'When enabled' }
+];
+
+// Build quick lookup maps
+const nodeMap = Object.fromEntries(nodes.map(n=>[n.id,n]));
+const outMap = {};
+const inMap = {};
+for(const n of nodes){ outMap[n.id]=[]; inMap[n.id]=[]; }
+for(const e of edges){
+  if(e.from==='Any') continue;
+  outMap[e.from].push(e);
+  inMap[e.to].push(e);
+}
+// also add Any edges (hotreset/disabled) as incoming from all nodes
+for(const e of edges.filter(x=>x.from==='Any')){
+  for(const n of nodes){ if(n.id===e.to) continue; inMap[e.to].push({from:n.id,to:e.to,reason:e.reason}); outMap[n.id].push({from:n.id,to:e.to,reason:e.reason}); }
+}
+
+// SVG helpers
+const svg = document.getElementById('svg');
+function createEdgePath(x1,y1,x2,y2){
+  const dx = Math.abs(x2-x1);
+  const dy = Math.abs(y2-y1);
+  const mx = (x1+x2)/2;
+  const c1x = mx; const c1y = y1;
+  const c2x = mx; const c2y = y2;
+  return `M ${x1} ${y1} C ${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}`;
+}
+
+// Render edges first (so nodes sit on top)
+const edgeGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
+edgeGroup.setAttribute('id','edges'); svg.appendChild(edgeGroup);
+
+const edgeEls = [];
+for(const e of edges){
+  if(e.from==='Any') continue; // handled separately by expansions above
+  const n1 = nodeMap[e.from]; const n2 = nodeMap[e.to];
+  if(!n1 || !n2) continue;
+  const c1 = {x:n1.x+100, y:n1.y+32};
+  const c2 = {x:n2.x+100, y:n2.y+32};
+  const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('d', createEdgePath(c1.x,c1.y,c2.x,c2.y));
+  path.setAttribute('class','edge');
+  path.dataset.from = e.from; path.dataset.to = e.to; path.dataset.reason = e.reason;
+  edgeGroup.appendChild(path);
+  edgeEls.push(path);
+}
+// Add Any edges (hotreset/disabled) from all nodes with updated coordinates
+for(const e of edges.filter(x=>x.from==='Any')){
+  for(const n of nodes){ 
+    if(n.id===e.to) continue; 
+    const c1={x:n.x+100,y:n.y+32}; 
+    const c2={x:nodeMap[e.to].x+100,y:nodeMap[e.to].y+32}; 
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path'); 
+    path.setAttribute('d',createEdgePath(c1.x,c1.y,c2.x,c2.y)); 
+    path.setAttribute('class','edge'); 
+    path.dataset.from=n.id; 
+    path.dataset.to=e.to; 
+    path.dataset.reason=e.reason; 
+    edgeGroup.appendChild(path); 
+    edgeEls.push(path); 
+  }
+}
+
+// Render nodes with substate capability
+const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg','g'); 
+nodeGroup.setAttribute('id','nodes'); 
+svg.appendChild(nodeGroup);
+
+for(const n of nodes){
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.setAttribute('class','node'); 
+  g.setAttribute('transform',`translate(${n.x},${n.y})`); 
+  g.dataset.id=n.id;
+  
+  // Main node rectangle
+  const rect = document.createElementNS('http://www.w3.org/2000/svg','rect'); 
+  rect.setAttribute('width','200'); 
+  rect.setAttribute('height','65');
+  rect.setAttribute('class','main-rect');
+  
+  const title = document.createElementNS('http://www.w3.org/2000/svg','text'); 
+  title.setAttribute('x','16'); 
+  title.setAttribute('y','25'); 
+  title.setAttribute('class','title'); 
+  title.textContent=n.title;
+  
+  const sub = document.createElementNS('http://www.w3.org/2000/svg','text'); 
+  sub.setAttribute('x','16'); 
+  sub.setAttribute('y','45'); 
+  sub.setAttribute('class','sub'); 
+  sub.textContent=n.subs && n.subs.length ? `${n.subs.length} substates` : '';
+  
+  g.appendChild(rect); 
+  g.appendChild(title); 
+  g.appendChild(sub);
+  
+  // Create substate nodes (initially hidden)
+  if(n.subs && n.subs.length) {
+    const substateGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
+    substateGroup.setAttribute('class','substate-group');
+    substateGroup.setAttribute('data-parent', n.id);
+    
+    n.subs.forEach((substate, index) => {
+      const subG = document.createElementNS('http://www.w3.org/2000/svg','g');
+      subG.setAttribute('class','substate');
+      subG.setAttribute('data-substate', substate.name);
+      
+      // Position substates below the main node
+      const subY = 80 + (index * 35);
+      subG.setAttribute('transform',`translate(20,${subY})`);
+      
+      const subRect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      subRect.setAttribute('width','160');
+      subRect.setAttribute('height','30');
+      
+      const subTitle = document.createElementNS('http://www.w3.org/2000/svg','text');
+      subTitle.setAttribute('x','8');
+      subTitle.setAttribute('y','12');
+      subTitle.textContent = substate.name;
+      
+      const subDesc = document.createElementNS('http://www.w3.org/2000/svg','text');
+      subDesc.setAttribute('x','8');
+      subDesc.setAttribute('y','24');
+      subDesc.setAttribute('style','font-size:9px;fill:#94a3b8');
+      subDesc.textContent = substate.desc.length > 22 ? substate.desc.substring(0,22) + '...' : substate.desc;
+      
+      subG.appendChild(subRect);
+      subG.appendChild(subTitle);
+      subG.appendChild(subDesc);
+      substateGroup.appendChild(subG);
+    });
+    
+    g.appendChild(substateGroup);
+  }
+  
+  nodeGroup.appendChild(g);
+}
+
+// Interaction: find predecessors and successors (full set via DFS)
+function getSuccessors(start){
+  const visited = new Set();
+  function dfs(u){
+    for(const e of outMap[u]||[]){ const v = e.to; if(!visited.has(v)){ visited.add(v); dfs(v); } }
+  }
+  dfs(start); return Array.from(visited).filter(x=>x!==start);
+}
+function getPredecessors(target){
+  const visited = new Set();
+  function dfs(u){
+    for(const k of Object.keys(outMap)){
+      for(const e of outMap[k]){ if(e.to===u){ if(!visited.has(k)){ visited.add(k); dfs(k);} }}
+    }
+  }
+  dfs(target); return Array.from(visited).filter(x=>x!==target);
+}
+
+function clearHighlight(){
+  document.querySelectorAll('.node').forEach(n=>{
+    n.classList.remove('selected','predecessor','successor','expanded');
+    // Hide all substates
+    const substates = n.querySelectorAll('.substate');
+    substates.forEach(s => s.classList.remove('visible'));
+    
+    // Reset main rectangle size
+    const mainRect = n.querySelector('.main-rect');
+    if(mainRect) {
+      mainRect.setAttribute('width', '200');
+      mainRect.setAttribute('height', '65');
+    }
+  });
+  document.querySelectorAll('.edge').forEach(e=>{e.classList.remove('active','pre','suc')});
+  document.getElementById('stateTitle').textContent='(none selected)'; 
+  document.getElementById('stateDesc').textContent='Click on any state to see its description and detailed information about substates, timing, and transitions.';
+  document.getElementById('sublist').innerHTML=''; 
+  document.getElementById('translist').innerHTML='';
+  
+  // Remove any additional info divs that were added for selected states
+  const existingInfo = document.getElementById('stateAdditionalInfo');
+  if(existingInfo) existingInfo.remove();
+}
+
+function highlightFor(nodeId){
+  clearHighlight();
+  const nodeEls = Array.from(document.querySelectorAll('.node'));
+  const selectedEl = nodeEls.find(g=>g.dataset.id===nodeId);
+  if(selectedEl) {
+    selectedEl.classList.add('selected', 'expanded');
+    
+    // Show substates for the selected node
+    const substates = selectedEl.querySelectorAll('.substate');
+    if(substates.length > 0) {
+      substates.forEach(s => s.classList.add('visible'));
+      
+      // Expand the main rectangle to contain substates
+      const mainRect = selectedEl.querySelector('.main-rect');
+      if(mainRect) {
+        const expandedHeight = 85 + (substates.length * 35);
+        mainRect.setAttribute('height', expandedHeight.toString());
+        mainRect.setAttribute('width', '200');
+      }
+    }
+  }
+
+  const succ = getSuccessors(nodeId);
+  const pred = getPredecessors(nodeId);
+
+  // mark successors and predecessor nodes
+  succ.forEach(id=>{ const el = nodeEls.find(g=>g.dataset.id===id); if(el) el.classList.add('successor'); });
+  pred.forEach(id=>{ const el = nodeEls.find(g=>g.dataset.id===id); if(el) el.classList.add('predecessor'); });
+
+  // highlight edges: outgoing from selected -> active (suc), incoming -> pre
+  document.querySelectorAll('.edge').forEach(e=>{
+    const f = e.dataset.from; const t = e.dataset.to;
+    if(f===nodeId){ e.classList.add('active','suc'); }
+    if(t===nodeId){ e.classList.add('pre'); }
+    if(pred.includes(f) && (!succ.includes(t)) && t===nodeId){ e.classList.add('pre'); }
+  });
+
+  // populate sidebar with enhanced information
+  const n = nodeMap[nodeId];
+  document.getElementById('stateTitle').textContent = n.title;
+  document.getElementById('stateDesc').textContent = n.desc;
+  
+  // Enhanced substates display with detailed descriptions
+  const sublist = document.getElementById('sublist'); 
+  sublist.innerHTML=''; 
+  if(n.subs && n.subs.length){ 
+    n.subs.forEach(s=>{ 
+      const li=document.createElement('li'); 
+      li.innerHTML = `<strong>${s.name}</strong><br><small style="color:var(--muted);font-size:10px">${s.desc}</small>`;
+      li.style.fontSize='11px';
+      li.style.lineHeight='1.4';
+      li.style.marginBottom='8px';
+      sublist.appendChild(li); 
+    }); 
+  } else { 
+    const li=document.createElement('li'); 
+    li.textContent='(no substates defined)'; 
+    li.style.fontStyle='italic';
+    sublist.appendChild(li); 
+  }
+
+  // Add additional state information ONLY when state is clicked/selected
+  if(n.purpose || n.duration || n.conditions) {
+    const infoDiv = document.createElement('div');
+    infoDiv.style.marginTop = '12px';
+    infoDiv.style.fontSize = '12px';
+    infoDiv.style.color = 'var(--muted)';
+    infoDiv.id = 'stateAdditionalInfo'; // Add ID for easy removal
+    
+    if(n.purpose) {
+      const purposeP = document.createElement('div');
+      purposeP.innerHTML = `<strong>Purpose:</strong> ${n.purpose}`;
+      purposeP.style.marginBottom = '4px';
+      infoDiv.appendChild(purposeP);
+    }
+    
+    if(n.duration) {
+      const durationP = document.createElement('div');
+      durationP.innerHTML = `<strong>Duration:</strong> ${n.duration}`;
+      durationP.style.marginBottom = '4px';
+      infoDiv.appendChild(durationP);
+    }
+    
+    if(n.conditions) {
+      const conditionsP = document.createElement('div');
+      conditionsP.innerHTML = `<strong>Entry Conditions:</strong> ${n.conditions}`;
+      infoDiv.appendChild(conditionsP);
+    }
+    
+    // Insert after state description
+    document.getElementById('stateDesc').parentNode.insertBefore(infoDiv, document.querySelector('hr'));
+  }
+
+  // Enhanced transitions list with timing information
+  const translist = document.getElementById('translist'); 
+  translist.innerHTML='';
+  
+  const outs = outMap[nodeId] || [];
+  if(outs.length){ 
+    const outHeader = document.createElement('li');
+    outHeader.innerHTML = '<strong>Outgoing Transitions:</strong>';
+    outHeader.style.color = 'var(--warn)';
+    outHeader.style.marginBottom = '4px';
+    translist.appendChild(outHeader);
+    
+    outs.forEach(o=>{ 
+      const li=document.createElement('li'); 
+      li.innerHTML = `→ <strong>${o.to}</strong>: ${o.reason}`;
+      if(o.trigger) li.innerHTML += `<br><small style="color:var(--muted)">Trigger: ${o.trigger}</small>`;
+      if(o.time) li.innerHTML += `<br><small style="color:var(--muted)">Timing: ${o.time}</small>`;
+      li.style.marginBottom = '6px';
+      li.style.fontSize = '11px';
+      li.style.lineHeight = '1.3';
+      translist.appendChild(li); 
+    }); 
+  }
+  
+  const ins = inMap[nodeId] || [];
+  if(ins.length){ 
+    if(outs.length) {
+      const separator = document.createElement('li');
+      separator.style.height = '8px';
+      translist.appendChild(separator);
+    }
+    
+    const inHeader = document.createElement('li');
+    inHeader.innerHTML = '<strong>Incoming Transitions:</strong>';
+    inHeader.style.color = 'var(--good)';
+    inHeader.style.marginBottom = '4px';
+    translist.appendChild(inHeader);
+    
+    ins.forEach(i=>{ 
+      const li=document.createElement('li'); 
+      li.innerHTML = `<strong>${i.from}</strong> →: ${i.reason}`;
+      if(i.trigger) li.innerHTML += `<br><small style="color:var(--muted)">Trigger: ${i.trigger}</small>`;
+      if(i.time) li.innerHTML += `<br><small style="color:var(--muted)">Timing: ${i.time}</small>`;
+      li.style.marginBottom = '6px';
+      li.style.fontSize = '11px';
+      li.style.lineHeight = '1.3';
+      translist.appendChild(li); 
+    }); 
+  }
+}
+
+// attach click handlers to nodes and substates (remove hover handlers)
+document.querySelectorAll('.node').forEach(g=>{
+  g.style.cursor = 'pointer';
+  
+  // Click handler for full details
+  g.addEventListener('click', (e)=>{ 
+    e.stopPropagation();
+    highlightFor(g.dataset.id); 
+  });
+});
+
+// Add hover handlers for substates (only when parent is selected)
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.querySelectorAll('.substate').forEach(subG => {
+      subG.style.cursor = 'pointer';
+      
+      subG.addEventListener('mouseenter', () => {
+        const substateName = subG.dataset.substate;
+        const parentId = subG.closest('.node').dataset.id;
+        const parentNode = nodeMap[parentId];
+        const substate = parentNode.subs.find(s => s.name === substateName);
+        
+        // Only update sidebar if parent node is selected and substate is visible
+        if(substate && subG.classList.contains('visible') && subG.closest('.node').classList.contains('selected')) {
+          document.getElementById('stateTitle').textContent = substate.name;
+          document.getElementById('stateDesc').textContent = substate.desc;
+        }
+      });
+      
+      subG.addEventListener('mouseleave', () => {
+        const parentId = subG.closest('.node').dataset.id;
+        const parentNode = nodeMap[parentId];
+        
+        // Only restore parent info if parent is selected and substate is visible
+        if(subG.classList.contains('visible') && subG.closest('.node').classList.contains('selected')) {
+          document.getElementById('stateTitle').textContent = parentNode.title;
+          document.getElementById('stateDesc').textContent = parentNode.desc;
+        }
+      });
+    });
+  }, 100);
+});
+
+// Reset button
+document.getElementById('resetBtn').addEventListener('click', clearHighlight);
+
+// Fit view button — simple zoom-to-fit (center)
+document.getElementById('zoomFit').addEventListener('click', ()=>{ document.getElementById('svg').setAttribute('viewBox','0 0 1600 800'); });
+
+// Export HTML: build a blob from current source and download
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const html = `<!doctype html>\n${document.documentElement.outerHTML}`;
+  const blob = new Blob([html],{type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'ltssm_interactive.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+
+// Play Walkthrough — steps: Detect -> Polling -> Configuration -> L0 -> Recovery -> L0 -> L0s -> L1 -> L2 -> Disabled
+const playBtn = document.getElementById('playBtn');
+let playing=false; let playSeq = ['Detect','Polling','Configuration','L0','Recovery','L0','L0s','L1','L2','Disabled'];
+let playIdx=0; let playTimer=null;
+function playStep(){
+  if(playIdx>=playSeq.length){ stopPlay(); return; }
+  highlightFor(playSeq[playIdx]);
+  playIdx++;
+}
+function startPlay(){ playing=true; playBtn.textContent='Stop Walkthrough'; playIdx=0; playStep(); playTimer = setInterval(playStep, 1800); }
+function stopPlay(){ playing=false; playBtn.textContent='Play Walkthrough'; if(playTimer) clearInterval(playTimer); playTimer=null; }
+playBtn.addEventListener('click', ()=>{ if(playing) stopPlay(); else startPlay(); });
+
+// initial hint
+clearHighlight();
+</script>
+</body>
+</html>
