@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sumit Kumar – Software Engineer | Linux Kernel · Systems Programming</title>
+  <meta name="description" content="Software engineer specializing in Linux kernel PCIe drivers, systems programming, and backend engineering. Currently at Qualcomm." />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#1f3a5f" />
+
+  <!-- Bootstrap (layout only) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --fg: #111827;
+      --fg-soft: #374151;
+      --muted: #6b7280;
+      --accent: #1f3a5f;
+      --accent-soft: #e6edf5;
+      --border: #e5e7eb;
+      --card: #ffffff;
+    }
+
+    [data-theme="dark"] {
+      --bg: #0b0f14;
+      --fg: #e5e7eb;
+      --fg-soft: #cbd5e1;
+      --muted: #9ca3af;
+      --accent: #60a5fa;
+      --accent-soft: #0f172a;
+      --border: #1f2933;
+      --card: #0f172a;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      line-height: 1.7;
+    }
+
+    main { max-width: 980px; }
+
+    h1, h2, h3 {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    h1 { font-size: 2.5rem; letter-spacing: -0.02em; }
+    h2 { font-size: 1.5rem; margin-bottom: 1.2rem; font-weight: 700; }
+    h3 { font-size: 1.1rem; font-weight: 650; }
+
+    p { color: var(--fg-soft); margin-bottom: 0.6rem; }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav {
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+
+    .theme-toggle {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--fg);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* HERO */
+    header.hero {
+      background: linear-gradient(135deg, var(--accent) 0%, rgba(31, 58, 95, 0.8) 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 3rem;
+      margin-bottom: 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header.hero::before {
+      content: "";
+      position: absolute;
+      top: -40%;
+      right: -10%;
+      width: 400px;
+      height: 400px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+    }
+
+    header.hero .row { position: relative; z-index: 1; }
+
+    header.hero h1 {
+      color: white;
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-role {
+      color: rgba(255, 255, 255, 0.85);
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    header.hero p {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.05rem;
+      line-height: 1.8;
+    }
+
+    .hero img {
+      width: 140px;
+      height: 140px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    header.hero img:hover {
+      transform: scale(1.05);
+    }
+
+    /* SECTIONS */
+    section {
+      margin-bottom: 4rem;
+      padding-left: 1.25rem;
+      position: relative;
+    }
+
+    section::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.3rem;
+      width: 3px;
+      height: 100%;
+      background: var(--accent-soft);
+    }
+
+    .section-subtitle {
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    /* TIMELINE */
+    .timeline {
+      border-left: 2px solid var(--accent-soft);
+      padding-left: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .timeline-item {
+      margin-bottom: 2.5rem;
+      position: relative;
+      padding: 1.25rem;
+      background: var(--card);
+      border-radius: 10px;
+      border-left: 3px solid var(--accent);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .timeline-item:hover {
+      transform: translateX(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -1.65rem;
+      top: 1.75rem;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 0 3px var(--accent);
+    }
+
+    .timeline-date {
+      font-size: 0.8rem;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    ul { padding-left: 1.2rem; }
+    li { color: var(--fg-soft); margin-bottom: 0.35rem; }
+
+    /* SKILLS */
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .skill-badge {
+      background: transparent;
+      color: var(--fg-soft);
+      padding: 0;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 0;
+      display: inline;
+    }
+
+    .skill-badge::after {
+      content: ", ";
+    }
+
+    .skill-badge:last-child::after {
+      content: "";
+    }
+
+    /* PROJECTS */
+    article {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    article:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 16px rgba(31, 58, 95, 0.1);
+      transform: translateY(-4px);
+    }
+
+    article h3 {
+      margin-bottom: 0.5rem;
+      margin-top: 0;
+    }
+
+    article a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 600;
+    }
+
+    article a::after {
+      content: "↗";
+      font-size: 1.1em;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .social-links a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-weight: bold;
+    }
+
+    .social-links a:hover {
+      background: var(--accent);
+      color: white;
+      transform: translateY(-3px);
+    }
+
+    /* CTA SECTION */
+    .cta-section {
+      background: linear-gradient(135deg, var(--accent) 0%, rgba(31, 58, 95, 0.8) 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 2.5rem;
+      text-align: center;
+      margin: 4rem 0;
+    }
+
+    .cta-section h2 {
+      color: white;
+      margin-bottom: 1rem;
+    }
+
+    .cta-section a {
+      display: inline-block;
+      background: white;
+      color: var(--accent);
+      padding: 0.75rem 2rem;
+      border-radius: 8px;
+      font-weight: 700;
+      margin-top: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .cta-section a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      text-decoration: none;
+    }
+
+    /* UPSTREAM CONTRIBUTIONS */
+    .upstream-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 1.5rem;
+    }
+
+    .upstream-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1.5rem;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      background: var(--card);
+      transition: all 0.3s ease;
+    }
+
+    .upstream-item:hover {
+      border-color: var(--accent);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .upstream-content {
+      flex: 1;
+    }
+
+    .upstream-item a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+
+    .upstream-item a:hover {
+      text-decoration: underline;
+    }
+
+    .upstream-description {
+      font-size: 0.8rem;
+      color: var(--fg-soft);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .status-merged {
+      background: rgba(34, 197, 94, 0.15);
+      color: #15803d;
+    }
+
+    [data-theme="dark"] .status-merged {
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+    }
+
+    .status-inprogress {
+      background: rgba(59, 130, 246, 0.15);
+      color: #1e40af;
+    }
+
+    [data-theme="dark"] .status-inprogress {
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+    }
+  </style>
+</head>
+
+<body>
+
+<nav class="py-3">
+  <div class="container d-flex justify-content-between align-items-center">
+    <strong style="font-size: 1.1rem;">SK</strong>
+    <div class="d-flex gap-3 align-items-center">
+      <a href="mailto:sumitkumar.sk.tech@gmail.com">Email</a>
+      <a href="https://github.com/sk1802" target="_blank">GitHub</a>
+      <a href="https://www.linkedin.com/in/sumit-kumar-06b022213/" target="_blank">LinkedIn</a>
+      <button id="themeToggle" class="theme-toggle">🌙</button>
+    </div>
+  </div>
+</nav>
+
+<main class="container mt-5">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="row align-items-center g-4">
+      <div class="col-md-auto text-center">
+        <img src="profile.png" alt="Sumit Kumar">
+      </div>
+      <div class="col">
+        <div class="section-subtitle">Software Engineer</div>
+        <h1>Sumit Kumar</h1>
+        <div class="hero-role">
+          Linux Kernel · PCIe Drivers · Systems Programming
+        </div>
+        <p>
+          Currently at Qualcomm building Linux kernel infrastructure and PCIe drivers.
+          Passionate about systems programming, OS fundamentals, and production-quality code.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- EXPERIENCE -->
+  <section>
+    <div class="section-subtitle">Career</div>
+    <h2>Experience</h2>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-date">Dec 2025 – Present</div>
+        <h3>Software Engineer — Qualcomm</h3>
+        <p style="margin-bottom: 0.75rem; color: var(--muted); font-size: 0.95rem;">San Diego, CA</p>
+        <ul>
+          <li>Linux kernel PCIe driver development for next-gen SoCs.</li>
+          <li>Low-level synchronization, DMA, and hardware–software integration.</li>
+          <li>Performance profiling and subsystem optimization.</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">Jul 2024 – Nov 2025</div>
+        <h3>Associate Software Engineer — Qualcomm</h3>
+        <p style="margin-bottom: 0.75rem; color: var(--muted); font-size: 0.95rem;">San Diego, CA</p>
+        <ul>
+          <li>Driver validation, debugging, and code reviews.</li>
+          <li>Mainline kernel contributions.</li>
+        </ul>
+      </div>
+
+      <div class="timeline-item">
+        <div class="timeline-date">2022 – 2024</div>
+        <h3>Teaching Assistant — IIIT Delhi</h3>
+        <p style="margin-bottom: 0.75rem; color: var(--muted); font-size: 0.95rem;">New Delhi, India</p>
+        <ul>
+          <li>Instructed Computer Architecture and Programming courses.</li>
+          <li>Mentored 150+ students on systems fundamentals.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section>
+    <div class="section-subtitle">Expertise</div>
+    <h2>Technical Skills</h2>
+    
+    <div style="margin-top: 1rem; line-height: 1.8;">
+      <p style="margin-bottom: 0.4rem;"><strong>Languages:</strong> <span class="skills-grid"><span class="skill-badge">C</span><span class="skill-badge">C++</span><span class="skill-badge">Python</span><span class="skill-badge">JavaScript</span><span class="skill-badge">Bash</span></span></p>
+
+      <p style="margin-top: 1rem; margin-bottom: 0.4rem;"><strong>Systems & Kernel:</strong> <span class="skills-grid"><span class="skill-badge">Linux Kernel</span><span class="skill-badge">PCIe</span><span class="skill-badge">Device Drivers</span><span class="skill-badge">x86/ARM</span><span class="skill-badge">Embedded Systems</span><span class="skill-badge">DMA & IRQ</span></span></p>
+
+      <p style="margin-top: 1rem; margin-bottom: 0.4rem;"><strong>Platforms & Tools:</strong> <span class="skills-grid"><span class="skill-badge">Git</span><span class="skill-badge">Django</span><span class="skill-badge">PostgreSQL</span><span class="skill-badge">Docker</span></span></p>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section>
+    <div class="section-subtitle">Portfolio</div>
+    <h2>Featured Projects</h2>
+
+    <article>
+      <h3>Linux PCIe Driver Infrastructure</h3>
+      <p>Core kernel driver development focused on PCIe endpoint and root complex management, DMA handling, and performance optimization for production SoCs.</p>
+      <p style="font-size: 0.85rem; color: var(--muted);"><strong>Tech:</strong> C, Linux Kernel, PCIe Spec, x86/ARM</p>
+    </article>
+
+    <article>
+      <h3>RISC-V ISA Assembler & Simulator</h3>
+      <p>Custom assembler and cycle-accurate simulator for the RISC-V instruction set with support for extensions and debugging utilities.</p>
+      <p style="font-size: 0.85rem; color: var(--muted);"><strong>Tech:</strong> C++, RISC-V ISA</p>
+    </article>
+
+    <article>
+      <h3>
+        <a href="https://federatedhealthplatform.tavlab.iiitd.edu.in/home" target="_blank">
+          Federated Health Platform (IFHP)
+        </a>
+      </h3>
+      <p>Maintainer of production federated learning platform with model zoo, dashboards, and collaborative features for healthcare research.</p>
+      <p style="font-size: 0.85rem; color: var(--muted);"><strong>Tech:</strong> MERN, PyTorch, FastAPI</p>
+    </article>
+
+    <article>
+      <h3>
+        <a href="https://fms.fh.iiitd.edu.in/" target="_blank">
+          Facility Management System
+        </a>
+      </h3>
+      <p>Production backend system powering campus facility workflows, requisition management, and asset tracking across 5000+ daily users.</p>
+      <p style="font-size: 0.85rem; color: var(--muted);"><strong>Tech:</strong> Django, PostgreSQL, REST APIs</p>
+    </article>
+
+    <article>
+      <h3>
+        <a href="https://pypi.org/project/msa-toolbox/" target="_blank">
+          MSA Toolbox
+        </a>
+      </h3>
+      <p>Python GUI toolkit for adversarial machine learning evaluation with integrated attack and defense mechanisms.</p>
+      <p style="font-size: 0.85rem; color: var(--muted);"><strong>Tech:</strong> Python, PyQt, scikit-learn</p>
+    </article>
+
+    <article>
+      <h3>Dynamic QR Code System</h3>
+      <p>Smart QR system enabling link updates without regeneration—useful for campaigns and temporary URLs.</p>
+      <p style="font-size: 0.85rem; color: var(--muted);"><strong>Tech:</strong> Node.js, Redis</p>
+    </article>
+  </section>
+
+  <!--Upstream Work-->
+    <!-- UPSTREAM CONTRIBUTIONS -->
+  <section>
+    <div class="section-subtitle">Open Source</div>
+    <h2>Upstream Contributions</h2>
+    
+    <ul class="upstream-list">
+      <li class="upstream-item">
+        <div class="upstream-content">
+          <a href="https://lore.kernel.org/mhi/20250409-rp_fix-v1-1-8cf1fa22ed28@quicinc.com/" target="_blank">bus: mhi: host: Fix read pointer race condition in channel transfers</a>
+          <p class="upstream-description">Fixes a critical race condition where read pointer updates in MHI channel transfers could cause data corruption during concurrent operations. Ensures atomic updates to prevent reading stale data.</p>
+        </div>
+        <span class="status-badge status-merged">Merged</span>
+      </li>
+      <li class="upstream-item">
+        <div class="upstream-content">
+          <a href="https://lore.kernel.org/mhi/20250910-final_chained-v3-1-ec77c9d88ace@oss.qualcomm.com/" target="_blank">bus: mhi: ep: Fix chained transfer handling in read path</a>
+          <p class="upstream-description">Fixes incorrect handling of chained DMA transfers in the MHI endpoint read path. Properly chains multiple buffers and correctly propagates completion status for multi-segment transfers.</p>
+        </div>
+        <span class="status-badge status-merged">Merged</span>
+      </li>
+      <li class="upstream-item">
+        <div class="upstream-content">
+          <a href="https://lore.kernel.org/linux-pci/20260105-dt-parser-v1-0-b11c63cb5e2c@oss.qualcomm.com/" target="_blank">PCI: qcom: Add device tree support for multi-port controllers</a>
+          <p class="upstream-description">Adds device tree parsing support for multi-port PCIe controllers. Enables specification of port configuration and topology in device tree bindings.</p>
+        </div>
+        <span class="status-badge status-inprogress">In Progress</span>
+      </li>
+      <li class="upstream-item">
+        <div class="upstream-content">
+          <a href="https://lore.kernel.org/mhi/20260203-reset_worker_deadlock-v1-0-7ed889b5bf19@oss.qualcomm.com/" target="_blank">bus: mhi: host: Fix reset worker synchronization deadlock</a>
+          <p class="upstream-description">Fixes synchronization issues in MHI device state management. Prevents deadlocks in reset worker by proper locking and ensuring state consistency across device transitions.</p>
+        </div>
+        <span class="status-badge status-inprogress">In Progress</span>
+      </li>
+      <li class="upstream-item">
+        <div class="upstream-content">
+          <a href="https://lore.kernel.org/mhi/20251104-loopback_mhi-v2-0-727a3fd9aa74@oss.qualcomm.com/" target="_blank">bus: mhi: Add loopback driver for MHI host and device testing</a>
+          <p class="upstream-description">Implements loopback drivers for testing MHI host and device implementations. Enables self-testing and validation of the entire MHI stack without hardware dependencies.</p>
+        </div>
+        <span class="status-badge status-inprogress">In Progress</span>
+      </li>
+    </ul>
+  </section>
+
+  <!-- EDUCATION -->
+  <section>
+    <div class="section-subtitle">Background</div>
+    <h2>Education</h2>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-date">2020 – 2024</div>
+        <h3>B.Tech in Computer Science</h3>
+        <p style="color: var(--muted); margin-bottom: 0;">IIIT Delhi</p>
+        <p style="color: var(--muted); font-size: 0.9rem;">CGPA: 8.6/10 · Honors in Operating Systems & Architecture</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">2018 – 2019</div>
+        <h3>Senior Secondary</h3>
+        <p style="color: var(--muted);">CRPF Public School, Rohini · 94%</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Open to collaborations</h2>
+    <p style="font-size: 1.05rem; margin-bottom: 0;">Looking to discuss systems design, kernel work, or interesting side projects?</p>
+    <a href="mailto:sumitkumar.sk.tech@gmail.com">Get in Touch</a>
+  </section>
+
+</main>
+
+<footer class="py-4 mt-5">
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+      <div>
+        <p style="margin-bottom: 0.3rem;"><strong>Sumit Kumar</strong></p>
+        <p style="margin: 0; font-size: 0.9rem;">Software Engineer · Linux Kernel · Systems Programming</p>
+      </div>
+      <div class="social-links">
+        <a href="mailto:sumitkumar.sk.tech@gmail.com" title="Email">✉</a>
+        <a href="https://github.com/sk1802" target="_blank" title="GitHub">⚙</a>
+        <a href="https://www.linkedin.com/in/sumit-kumar-06b022213/" target="_blank" title="LinkedIn">in</a>
+      </div>
+    </div>
+    <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border);">
+    <p style="margin: 0; text-align: center; font-size: 0.85rem;">© 2026 Sumit Kumar.</p>
+  </div>
+</footer>
+
+<script>
+  const root = document.documentElement;
+  const btn = document.getElementById("themeToggle");
+
+  function setTheme(t) {
+    root.setAttribute("data-theme", t);
+    btn.textContent = t === "dark" ? "🌞" : "🌙";
+    localStorage.setItem("theme", t);
+  }
+
+  const saved = localStorage.getItem("theme");
+  if (saved) setTheme(saved);
+  else if (matchMedia("(prefers-color-scheme: dark)").matches) setTheme("dark");
+
+  btn.onclick = () =>
+    setTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+</script>
+
+</body>
+</html>
