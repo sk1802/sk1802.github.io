@@ -57,8 +57,110 @@
     a:hover { text-decoration: underline; }
 
     nav {
+      position: sticky;
+      top: 0;
+      z-index: 999;
       border-bottom: 1px solid var(--border);
       background: var(--bg);
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+    }
+
+    .nav-logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .nav-menu {
+      display: flex;
+      list-style: none;
+      gap: 2rem;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+    }
+
+    .nav-menu a {
+      color: var(--fg-soft);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: color 0.3s ease;
+    }
+
+    .nav-menu a:hover {
+      color: var(--accent);
+    }
+
+    .nav-menu a.active {
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 0.25rem;
+    }
+
+    .nav-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .nav-toggle span {
+      width: 25px;
+      height: 2px;
+      background: var(--fg);
+      transition: all 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+      .nav-toggle {
+        display: flex;
+      }
+
+      .nav-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        gap: 0;
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+        padding: 1rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+
+      .nav-menu.active {
+        max-height: 400px;
+      }
+
+      .nav-menu li {
+        border-bottom: 1px solid var(--border);
+        padding: 0.75rem 0;
+      }
+
+      .nav-menu li:last-child {
+        border-bottom: none;
+      }
+
+      .nav-menu a {
+        display: block;
+        padding: 0.5rem 0;
+      }
+
+      .nav-menu a.active {
+        border-bottom: none;
+        color: var(--accent);
+      }
     }
 
     .theme-toggle {
@@ -404,14 +506,26 @@
 
 <body>
 
-<nav class="py-3">
-  <div class="container d-flex justify-content-between align-items-center">
-    <strong style="font-size: 1.1rem;">SK</strong>
-    <div class="d-flex gap-3 align-items-center">
-      <a href="mailto:sumitkumar.sk.tech@gmail.com">Email</a>
-      <a href="https://github.com/sk1802" target="_blank">GitHub</a>
-      <a href="https://www.linkedin.com/in/sumit-kumar-06b022213/" target="_blank">LinkedIn</a>
-      <button id="themeToggle" class="theme-toggle">🌙</button>
+<nav>
+  <div class="container">
+    <div class="nav-container">
+      <div class="nav-logo">SK</div>
+      <button class="nav-toggle" id="navToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="#experience" class="nav-link">Experience</a></li>
+        <li><a href="#skills" class="nav-link">Skills</a></li>
+        <li><a href="#projects" class="nav-link">Projects</a></li>
+        <li><a href="#upstream" class="nav-link">Upstream</a></li>
+        <li><a href="#education" class="nav-link">Education</a></li>
+        <li><a href="mailto:sumitkumar.sk.tech@gmail.com" class="nav-link">Email</a></li>
+        <li><a href="https://github.com/sk1802" target="_blank" class="nav-link">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/sumit-kumar-06b022213/" target="_blank" class="nav-link">LinkedIn</a></li>
+        <li><button id="themeToggle" class="theme-toggle">🌙</button></li>
+      </ul>
     </div>
   </div>
 </nav>
@@ -439,7 +553,7 @@
   </header>
 
   <!-- EXPERIENCE -->
-  <section>
+  <section id="experience">
     <div class="section-subtitle">Career</div>
     <h2>Experience</h2>
 
@@ -478,7 +592,7 @@
   </section>
 
   <!-- SKILLS -->
-  <section>
+  <section id="skills">
     <div class="section-subtitle">Expertise</div>
     <h2>Technical Skills</h2>
     
@@ -492,7 +606,7 @@
   </section>
 
   <!-- PROJECTS -->
-  <section>
+  <section id="projects">
     <div class="section-subtitle">Portfolio</div>
     <h2>Featured Projects</h2>
 
@@ -546,8 +660,8 @@
   </section>
 
   <!--Upstream Work-->
-    <!-- UPSTREAM CONTRIBUTIONS -->
-  <section>
+  <!-- UPSTREAM CONTRIBUTIONS -->
+  <section id="upstream">
     <div class="section-subtitle">Open Source</div>
     <h2>Upstream Contributions</h2>
     
@@ -591,7 +705,7 @@
   </section>
 
   <!-- EDUCATION -->
-  <section>
+  <section id="education">
     <div class="section-subtitle">Background</div>
     <h2>Education</h2>
 
@@ -600,7 +714,7 @@
         <div class="timeline-date">2020 – 2024</div>
         <h3>B.Tech in Computer Science</h3>
         <p style="color: var(--muted); margin-bottom: 0;">IIIT Delhi</p>
-        <p style="color: var(--muted); font-size: 0.9rem;">CGPA: 8.6/10 · Honors in Operating Systems & Architecture</p>
+        <p style="color: var(--muted); font-size: 0.9rem;">CGPA: 8.6/10</p>
       </div>
       <div class="timeline-item">
         <div class="timeline-date">2018 – 2019</div>
@@ -653,6 +767,42 @@
 
   btn.onclick = () =>
     setTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+
+  // Navigation toggle functionality
+  const navToggle = document.getElementById("navToggle");
+  const navMenu = document.getElementById("navMenu");
+  const navLinks = document.querySelectorAll(".nav-link");
+
+  navToggle.addEventListener("click", () => {
+    navMenu.classList.toggle("active");
+  });
+
+  navLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      navMenu.classList.remove("active");
+    });
+  });
+
+  // Smooth scroll behavior
+  document.documentElement.style.scrollBehavior = "smooth";
+
+  // Active link indicator on scroll
+  window.addEventListener("scroll", () => {
+    const sections = document.querySelectorAll("section[id]");
+    const scrollPosition = window.scrollY + 100;
+
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      const sectionHeight = section.offsetHeight;
+      const sectionId = section.getAttribute("id");
+
+      if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+        navLinks.forEach(link => link.classList.remove("active"));
+        const activeLink = document.querySelector(`a[href="#${sectionId}"]`);
+        if (activeLink) activeLink.classList.add("active");
+      }
+    });
+  });
 </script>
 
 </body>
