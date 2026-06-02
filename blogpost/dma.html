@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adding Batch DMA to the Linux Kernel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f12;
+    --surface: #13161a;
+    --border: #1e2228;
+    --accent: #4af0a0;
+    --accent-dim: rgba(74, 240, 160, 0.12);
+    --accent2: #f0a04a;
+    --text: #c8cdd5;
+    --text-dim: #6b7280;
+    --text-bright: #eef0f3;
+    --code-bg: #0a0c0e;
+    --red: #f07070;
+    --blue: #70b8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    min-height: 100vh;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 80px 32px 120px;
+  }
+
+  /* Header */
+  .post-header {
+    margin-bottom: 64px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(74, 240, 160, 0.2);
+    padding: 4px 12px;
+    border-radius: 3px;
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 600;
+    color: var(--text-bright);
+    line-height: 1.25;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--text-dim);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  .meta {
+    margin-top: 24px;
+    display: flex;
+    gap: 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .meta span { display: flex; align-items: center; gap: 6px; }
+  .meta-dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; display: inline-block; }
+
+  /* Sections */
+  .section {
+    margin-bottom: 56px;
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .section:nth-child(1) { animation-delay: 0.1s; }
+  .section:nth-child(2) { animation-delay: 0.2s; }
+  .section:nth-child(3) { animation-delay: 0.3s; }
+  .section:nth-child(4) { animation-delay: 0.4s; }
+  .section:nth-child(5) { animation-delay: 0.5s; }
+  .section:nth-child(6) { animation-delay: 0.6s; }
+  .section:nth-child(7) { animation-delay: 0.7s; }
+  .section:nth-child(8) { animation-delay: 0.8s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-bright);
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--accent2);
+    margin: 28px 0 12px;
+    letter-spacing: 0.01em;
+  }
+
+  p { margin-bottom: 16px; color: var(--text); }
+
+  p:last-child { margin-bottom: 0; }
+
+  strong { color: var(--text-bright); font-weight: 500; }
+
+  /* Code blocks */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    margin: 20px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #8db4d4;
+  }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 3px;
+    color: var(--accent);
+  }
+
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  /* Math/callout box */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: 4px;
+    padding: 20px 24px;
+    margin: 20px 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .callout .label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .callout .math-line {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 4px 0;
+  }
+
+  .callout .math-before { color: var(--red); }
+  .callout .math-after { color: var(--accent); }
+  .callout .math-arrow { color: var(--text-dim); font-size: 12px; }
+
+  /* Review block */
+  .review-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+
+  .reviewer {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .reviewer-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--blue);
+    flex-shrink: 0;
+  }
+
+  .review-text {
+    font-style: italic;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.65;
+    border-left: 2px solid var(--border);
+    padding-left: 16px;
+    margin-bottom: 12px;
+  }
+
+  .review-response {
+    font-size: 14px;
+    color: var(--text-dim);
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Future usecases grid */
+  .use-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+  }
+
+  @media (max-width: 600px) {
+    .use-grid { grid-template-columns: 1fr; }
+  }
+
+  .use-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 18px;
+    transition: border-color 0.2s;
+  }
+
+  .use-card:hover { border-color: rgba(74, 240, 160, 0.3); }
+
+  .use-card-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .use-card p {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* Learning list */
+  .learning-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+
+  .learning-list li {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 14px;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .learning-list li:last-child { border-bottom: none; }
+
+  .learning-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    flex-shrink: 0;
+    padding-top: 3px;
+  }
+
+  /* Footer */
+  .post-footer {
+    margin-top: 72px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: gap;
+    gap: 16px;
+  }
+
+  .patch-link {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(74, 240, 160, 0.3);
+    transition: border-color 0.2s;
+  }
+
+  .patch-link:hover { border-color: var(--accent); }
+
+  /* Inline diff style */
+  .diff-add { color: var(--accent); }
+  .diff-remove { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="post-header">
+    <div class="tag">Linux Kernel · DMA Engine · PCIe</div>
+    <h1>Adding Batch DMA Support to the Linux Kernel</h1>
+    <p class="subtitle">What the problem is, how I tried to solve it, what the reviewers taught me, and where it goes next.</p>
+    <div class="meta">
+      <span><span class="meta-dot"></span> Sumit Kumar</span>
+      <span><span class="meta-dot"></span> Upstream Linux Kernel</span>
+      <span><span class="meta-dot"></span> 2026</span>
+    </div>
+  </div>
+
+  <!-- WHAT -->
+  <div class="section">
+    <div class="section-label">01 — What</div>
+    <h2>The Problem</h2>
+    <p>
+      The Linux DMA engine exposes <code>dmaengine_prep_slave_sg()</code> for scatter-gather transfers.
+      It works well when you have a single source/destination relationship — one base address, multiple buffers hanging off it.
+    </p>
+    <p>
+      But there is a real gap: <strong>what if you need to move N independent buffers, each with its own source and destination address, in a single DMA transaction?</strong>
+    </p>
+    <p>
+      Today's answer: submit N separate transactions. N interrupts. N submission overheads.
+      For high-throughput workloads this is measurable CPU tax at the kernel level.
+    </p>
+  </div>
+
+  <!-- WHY -->
+  <div class="section">
+    <div class="section-label">02 — Why</div>
+    <h2>Motivation &amp; The Math</h2>
+    <p>
+      A Synopsys DesignWare eDMA controller supports linked-list (LL) mode — a hardware mechanism
+      to chain multiple transfer descriptors into a single DMA transaction. The controller walks the
+      linked list autonomously and fires <strong>one completion interrupt</strong> at the end, regardless of
+      how many descriptors were chained.
+    </p>
+    <p>
+      Each LL page is typically 4KB. The number of burst descriptors per page is determined by
+      the DMA burst size configured at hardware initialization. This sets the maximum batch size:
+    </p>
+
+    <div class="callout">
+      <div class="label">Interrupt Overhead — Before vs After</div>
+      <div class="math-line">
+        <span class="math-before">Before:</span>
+        <span>N transfers → N completion interrupts → N kernel wakeups</span>
+      </div>
+      <div class="math-line">
+        <span class="math-after">After: &nbsp;</span>
+        <span>N transfers → 1 LL transaction → 1 completion interrupt</span>
+      </div>
+      <div style="margin-top:12px; color: var(--text-dim); font-size:13px;">
+        Savings = N − 1 &nbsp;|&nbsp; 64 buffers → 63 interrupts eliminated &nbsp;|&nbsp; 256 buffers → 255 gone<br>
+        Max batch = floor(LL page size / descriptor size) × number of LL pages
+      </div>
+    </div>
+
+    <p>
+      The savings scale linearly with N. For workloads that batch tens or hundreds of buffers,
+      this is the difference between a constant interrupt rate and one that explodes with throughput.
+    </p>
+  </div>
+
+  <!-- HOW — INITIAL -->
+  <div class="section">
+    <div class="section-label">03 — How (Initial Approach)</div>
+    <h2>First Design</h2>
+    <p>
+      My initial approach extended <code>struct scatterlist</code> with an optional destination DMA address field,
+      gated behind a new Kconfig option <code>CONFIG_NEED_SG_DMA_DST_ADDR</code>:
+    </p>
+
+    <pre><code><span class="diff-add">+#ifdef CONFIG_NEED_SG_DMA_DST_ADDR
++	dma_addr_t	dma_dst_address;
++#endif</span></code></pre>
+
+    <p>
+      Each SG entry would then carry both a source (<code>sg_dma_address</code>) and a destination
+      (<code>sg_dma_dst_address</code>). A new API — <code>dmaengine_prep_batch_sg_dma()</code> — would
+      accept this extended list and program the eDMA linked-list hardware in a single transaction.
+    </p>
+    <p>
+      The DesignWare eDMA driver was extended with a new transfer type <code>EDMA_XFER_DUAL_ADDR_SG</code>,
+      and the MHI endpoint driver gained a <code>read_batch()</code> callback with both a DMA-optimized path
+      and a CPU-copy fallback via IATU.
+    </p>
+
+    <pre><code>static struct dma_async_tx_descriptor *
+dw_edma_device_prep_batch_sg_dma(struct dma_chan *dchan,
+                                 struct scatterlist *sg,
+                                 unsigned int nents,
+                                 enum dma_transfer_direction direction,
+                                 unsigned long flags)</code></pre>
+  </div>
+
+  <!-- REVIEW / UPDATE -->
+  <div class="section">
+    <div class="section-label">04 — Update (Reviewer Feedback)</div>
+    <h2>What the Maintainers Said</h2>
+    <p>The upstream review was direct and, on reflection, correct. Two key points landed:</p>
+
+    <div class="review-block">
+      <div class="reviewer"><span class="reviewer-dot"></span> Robin Hood — DMA maintainer</div>
+      <div class="review-text">
+        "Eww, no, what does this even mean? Is the regular dma_addr somehow implicitly a 'source' now?
+        How could the single piece of memory represented by page_link/offset/length have two different DMA addresses?
+        How are both the DMA mapping code and users supposed to know which one is relevant in any particular situation?"
+      </div>
+      <div class="review-response">
+        <strong style="color:var(--text-bright);">The issue:</strong> Extending <code>struct scatterlist</code> with a second DMA address creates a
+        contract ambiguity throughout the DMA mapping layer. Drivers and the mapping code have no way to
+        know which address field is relevant in which context. It's a layering violation.
+      </div>
+    </div>
+
+    <div class="review-block">
+      <div class="reviewer"><span class="reviewer-dot"></span> Vinod Koul — DMA engine maintainer</div>
+      <div class="review-text">
+        "Looks like you want to bring back <code>dmaengine_prep_dma_sg()</code> — see commit c678fa66341c.
+        If this is memcpy why are you talking about <code>dma_dst_address</code> which is a slave field?"
+      </div>
+      <div class="review-response">
+        <strong style="color:var(--text-bright);">The issue:</strong> This exact problem was solved before. Commit <code>c678fa66341c</code>
+        introduced <code>dmaengine_prep_dma_sg()</code> and was later reverted. The right path is to revive
+        that approach — not reinvent it with a different shape and a new layering problem.
+      </div>
+    </div>
+
+    <p>Both reviewers were right. I was not aware of that commit's history when I sent the patch.</p>
+  </div>
+
+  <!-- FINAL DESIGN -->
+  <div class="section">
+    <div class="section-label">05 — Final Design</div>
+    <h2>Revised Approach</h2>
+    <p>
+      The revised direction: revive <code>dmaengine_prep_dma_sg()</code> from commit <code>c678fa66341c</code>,
+      integrate it properly with the current codebase, and implement it in the DesignWare eDMA driver.
+    </p>
+    <p>
+      This avoids the <code>struct scatterlist</code> layering problem entirely. The API surface becomes
+      cleaner — no implicit dual-address fields, no hidden Kconfig gates for the mapping layer to worry about.
+      The implementation in dw-edma carries the dual-address logic internally where it belongs.
+    </p>
+    <p>
+      Revised series is in progress. The eDMA and MHI endpoint pieces remain structurally the same —
+      only the API contract at the dmaengine layer changes.
+    </p>
+  </div>
+
+  <!-- CURRENT USECASE -->
+  <div class="section">
+    <div class="section-label">06 — Current Upstream Use Case</div>
+    <h2>MHI Ring Caching &amp; Wraparound</h2>
+    <p>
+      The immediate upstream justification lives in the MHI (Modem Host Interface) endpoint stack.
+      MHI uses circular ring buffers in host memory. A ring wraparound — where valid descriptor data
+      spans two non-contiguous memory regions — is a routine occurrence.
+    </p>
+    <p>
+      Previously, reading a wrapped ring required two separate <code>read_sync()</code> calls:
+      two DMA transactions, two interrupts, two submission overheads, just to read one logical ring's data.
+    </p>
+    <p>
+      With the new <code>read_batch()</code> callback, both regions are submitted as a single batched
+      DMA transaction — one interrupt, one completion. The MHI endpoint driver implements two variants:
+    </p>
+
+    <h3>pci_epf_mhi_edma_read_batch()</h3>
+    <p>
+      DMA-optimized path. Builds a scatterlist where each entry maps one buffer region —
+      source address from host memory, destination address in device memory — and submits
+      the entire batch via the new DMA API. Completion is handled by a single callback.
+    </p>
+
+    <h3>pci_epf_mhi_iatu_read_batch()</h3>
+    <p>
+      CPU-copy fallback for non-DMA configurations. Sequentially calls <code>pci_epf_mhi_iatu_read()</code>
+      for each buffer in the array. Same interface, degraded path.
+    </p>
+
+    <p>
+      The ring caching logic in the MHI stack now calls <code>read_batch()</code> uniformly for all
+      ring reads — the wraparound case is no longer special-cased with extra logic.
+    </p>
+  </div>
+
+  <!-- FUTURE USECASES -->
+  <div class="section">
+    <div class="section-label">07 — Future Use Cases</div>
+    <h2>What This Unlocks Generally</h2>
+    <p>
+      The MHI ring case is the upstream anchor, but the pattern is general.
+      Any workload moving N independent memory regions benefits — interrupt savings scale with N in all cases.
+    </p>
+
+    <div class="use-grid">
+      <div class="use-card">
+        <div class="use-card-title">Model Load / Unload</div>
+        <p>Loading a large model means transferring many independent weight tensors. Each has its own source and destination. Today that's N transactions. With batch DMA it's one — regardless of N.</p>
+      </div>
+      <div class="use-card">
+        <div class="use-card-title">Inference Context Switching</div>
+        <p>Multi-tenant inference systems swap models on every request. Batching the unload and reload transfers cuts interrupt pressure on every switch, at the frequency of inference itself.</p>
+      </div>
+      <div class="use-card">
+        <div class="use-card-title">Ring-Based Protocol Stacks</div>
+        <p>Any protocol using circular rings — PCIe endpoint stacks, network device rings, NVMe queues — hits the wraparound problem. Batch DMA makes it a single transaction everywhere.</p>
+      </div>
+      <div class="use-card">
+        <div class="use-card-title">Many-to-Many Memory Transfers</div>
+        <p>The existing <code>prep_slave_sg()</code> assumes a fixed destination. Removing that constraint enables scatter-gather with fully independent destinations — a new primitive the kernel currently lacks.</p>
+      </div>
+    </div>
+
+    <p>
+      For workloads batching 64 or 256 buffers at a time, the gap between N interrupts and 1
+      is measurable latency and CPU overhead at the kernel level. The interrupt handler itself
+      is cheap — but scheduling, context switches, and cache pressure from N wakeups are not.
+    </p>
+  </div>
+
+  <!-- LEARNINGS -->
+  <div class="section">
+    <div class="section-label">08 — Learnings</div>
+    <h2>What This Process Taught Me</h2>
+    <ul class="learning-list">
+      <li>
+        <span class="learning-num">01</span>
+        <span><strong>Know the subsystem history before touching core data structures.</strong>
+        Extending <code>struct scatterlist</code> affects every driver and every architecture that uses DMA mapping.
+        Commits like <code>c678fa66341c</code> exist because this exact territory was navigated before.
+        Read the git log, read the revert message, understand why it was undone.</span>
+      </li>
+      <li>
+        <span class="learning-num">02</span>
+        <span><strong>Layering violations surface quickly in upstream review.</strong>
+        Adding a slave-mode field to a generic DMA structure created an ambiguity the mapping layer
+        couldn't resolve. The right fix was not to patch around it but to use the correct abstraction layer.</span>
+      </li>
+      <li>
+        <span class="learning-num">03</span>
+        <span><strong>A concrete upstream user makes all the difference.</strong>
+        The original <code>dmaengine_prep_dma_sg()</code> was reverted partly due to lack of real users.
+        The MHI ring wraparound case provides a concrete, in-tree user that justifies the API's existence.</span>
+      </li>
+      <li>
+        <span class="learning-num">04</span>
+        <span><strong>Upstream review is the process working correctly.</strong>
+        Maintainer feedback caught a real design issue before it landed in mainline.
+        The right response is to understand why, fix it, and resubmit — not to argue the point.</span>
+      </li>
+      <li>
+        <span class="learning-num">05</span>
+        <span><strong>The performance case is hardware-constrained, not tunable.</strong>
+        The 170x-class interrupt reduction is not a software optimization — it's a consequence of
+        DMA burst size and LL page size fixed at hardware configuration. Understanding those constraints
+        is what makes the optimization both correct and bounded.</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="post-footer">
+    <span>Patch under review — <a class="patch-link" href="https://lkml.org/lkml/2026/3/13/455" target="_blank">lkml.org</a></span>
+    <span>Revised series in progress</span>
+  </div>
+
+</div>
+</body>
+</html>
