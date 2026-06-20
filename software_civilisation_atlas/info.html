@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Atlas Glossary & Concepts</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --text-primary: rgba(226, 231, 238, 0.95);
+        --text-secondary: rgba(177, 188, 203, 0.8);
+        --border: rgba(177, 188, 203, 0.2);
+        --bg-dark: #02040a;
+        --bg-panel: rgba(5, 15, 30, 0.85);
+      }
+
+      body {
+        background: var(--bg-dark);
+        color: var(--text-primary);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      header {
+        margin-bottom: 40px;
+      }
+
+      h1 {
+        font-size: 32px;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        color: var(--text-secondary);
+        font-size: 16px;
+      }
+
+      .nav {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 40px;
+        flex-wrap: wrap;
+      }
+
+      .nav a {
+        color: rgba(184, 197, 216, 0.8);
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        transition: all 0.2s;
+      }
+
+      .nav a:hover {
+        background: rgba(100, 120, 160, 0.2);
+        color: var(--text-primary);
+      }
+
+      section {
+        margin-bottom: 50px;
+      }
+
+      h2 {
+        font-size: 24px;
+        margin-bottom: 16px;
+        font-weight: 600;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      h3 {
+        font-size: 16px;
+        margin-top: 20px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: rgba(184, 197, 216, 0.9);
+      }
+
+      .definition {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 16px;
+        margin: 12px 0;
+      }
+
+      .definition p {
+        margin-bottom: 8px;
+      }
+
+      .definition strong {
+        color: rgba(184, 197, 216, 0.95);
+      }
+
+      .metric-card {
+        background: rgba(50, 70, 100, 0.3);
+        border: 1px solid rgba(177, 188, 203, 0.1);
+        border-radius: 6px;
+        padding: 16px;
+        margin: 12px 0;
+      }
+
+      .metric-name {
+        font-weight: 600;
+        color: rgba(184, 197, 216, 0.95);
+        margin-bottom: 8px;
+        font-size: 15px;
+      }
+
+      .metric-description {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .civilization-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        margin: 20px 0;
+      }
+
+      .civ-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 16px;
+      }
+
+      .civ-name {
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .civ-swatch {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+      }
+
+      .civ-lore {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .cluster-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin: 20px 0;
+      }
+
+      .cluster-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 14px;
+      }
+
+      .cluster-name {
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: rgba(184, 197, 216, 0.95);
+      }
+
+      .cluster-description {
+        color: var(--text-secondary);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .interaction-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+
+      .interaction-table th,
+      .interaction-table td {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .interaction-table th {
+        background: rgba(50, 70, 100, 0.3);
+        font-weight: 600;
+        color: rgba(184, 197, 216, 0.95);
+      }
+
+      .interaction-table td:first-child {
+        font-weight: 500;
+        color: rgba(184, 197, 216, 0.9);
+      }
+
+      .highlight {
+        background: rgba(100, 120, 160, 0.2);
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+
+      footer {
+        margin-top: 60px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        color: var(--text-secondary);
+        font-size: 14px;
+        text-align: center;
+      }
+
+      a {
+        color: rgba(184, 197, 216, 0.8);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 8px 12px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        transition: all 0.2s;
+      }
+
+      .back-link:hover {
+        background: rgba(100, 120, 160, 0.2);
+      }
+      .project-footer {
+  margin-top: 48px;
+  padding: 20px 24px;
+
+  border-top: 1px solid rgba(177, 188, 203, 0.15);
+
+  color: rgba(177, 188, 203, 0.75);
+
+  font-size: 13px;
+  line-height: 1.7;
+
+  text-align: center;
+}
+
+.project-footer p {
+  margin: 6px 0;
+}
+
+.project-footer a {
+  color: rgba(184, 197, 216, 0.9);
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(184, 197, 216, 0.4);
+}
+
+.project-footer a:hover {
+  color: rgba(226, 231, 238, 1);
+  border-bottom-color: rgba(226, 231, 238, 0.8);
+}
+
+.project-footer .disclaimer {
+  margin-top: 14px;
+
+  font-size: 12px;
+
+  color: rgba(177, 188, 203, 0.55);
+
+  max-width: 800px;
+
+  margin-left: auto;
+  margin-right: auto;
+}
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="index.html" class="back-link">← Back to Atlas</a>
+
+      <header>
+        <h1>Software Civilization Atlas</h1>
+        <p class="subtitle">Glossary & Concepts</p>
+      </header>
+
+      <nav class="nav">
+        <a href="#metrics">Metrics</a>
+        <a href="#civilizations">Civilizations</a>
+        <a href="#clusters">Clusters</a>
+        <a href="#interactions">Interactions</a>
+        <a href="#keywords">Keywords</a>
+      </nav>
+
+      <!-- METRICS SECTION -->
+      <section id="metrics">
+        <h2>Core Metrics</h2>
+        <p>Every repository is scored on four dimensions that describe its technical characteristics and evolution pattern.</p>
+
+        <div class="metric-card">
+          <div class="metric-name">🔨 Craftsmanship (0-100)</div>
+          <div class="metric-description">
+            Reflects code quality, documentation, and maintainability. High scores indicate mature projects with strong engineering practices, comprehensive tests, and active code review. Low scores suggest rapid iteration or incomplete documentation.
+            <br><br>
+            <strong>Signals:</strong> Code review depth, documentation completeness, test coverage, commit message quality, consistent style.
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-name">⚙️ Machine Influence (0-100)</div>
+          <div class="metric-description">
+            Measures how much the codebase appears generated, templated, or auto-scaffolded. High scores indicate projects with repetitive patterns, generated boilerplate, or heavy use of code generation tools. Low scores suggest hand-written, artisanal code.
+            <br><br>
+            <strong>Signals:</strong> Example density, template directories, generated code patterns, boilerplate ratio, tool-generated structure.
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-name">✓ Stability (0-100)</div>
+          <div class="metric-description">
+            Indicates maintenance continuity and release predictability. High scores show consistent commit activity, regular releases, and predictable governance. Low scores suggest irregular or sporadic maintenance.
+            <br><br>
+            <strong>Signals:</strong> Commit frequency consistency, release regularity, issue resolution time, maintainer continuity.
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-name">🚀 Velocity (0-100)</div>
+          <div class="metric-description">
+            Reflects how quickly the project moves: commit frequency, release rate, and feature addition pace. High velocity means rapid development. Low velocity suggests slower, more deliberate evolution.
+            <br><br>
+            <strong>Signals:</strong> Commits per month, release frequency, pull request throughput, issue closure rate.
+          </div>
+        </div>
+      </section>
+
+      <!-- CIVILIZATIONS SECTION -->
+      <section id="civilizations">
+        <h2>Civilizations</h2>
+        <p>Five patterns describe how repositories evolve and move through development cycles. A civilization reflects not quality, but development philosophy and maturity stage.</p>
+
+        <div class="civilization-grid">
+          <div class="civ-card">
+            <div class="civ-name">
+              <span class="civ-swatch" style="background: #b8c5d8;"></span>
+              Vector Sigma
+            </div>
+            <div class="civ-lore">
+              Ancient craftsmanship. Slow, deliberate systems with long institutional memory. High stability, moderate velocity. Examples: Linux kernel, PostgreSQL, OpenSSL.
+            </div>
+          </div>
+
+          <div class="civ-card">
+            <div class="civ-name">
+              <span class="civ-swatch" style="background: #a7b9aa;"></span>
+              Autobots
+            </div>
+            <div class="civ-lore">
+              Humans augmented by automation. High craft with visible acceleration. Strong tooling and CI/CD integration. Examples: Kubernetes, TypeScript, React.
+            </div>
+          </div>
+
+          <div class="civ-card">
+            <div class="civ-name">
+              <span class="civ-swatch" style="background: #b98f8f;"></span>
+              Decepticons
+            </div>
+            <div class="civ-lore">
+              Fast-moving frontier projects where velocity outpaces refinement. High activity, newer, sometimes chaotic. Examples: Startup frameworks, experimental tools.
+            </div>
+          </div>
+
+          <div class="civ-card">
+            <div class="civ-name">
+              <span class="civ-swatch" style="background: #aaa3bf;"></span>
+              Quintessons
+            </div>
+            <div class="civ-lore">
+              Factory worlds and generated surfaces. Highly automated, highly repeatable. High machine influence. Examples: Build tools, code generators, scaffolders.
+            </div>
+          </div>
+
+          <div class="civ-card">
+            <div class="civ-name">
+              <span class="civ-swatch" style="background: #c0ad82;"></span>
+              Drifters
+            </div>
+            <div class="civ-lore">
+              Unclassified frontier projects with incomplete signal. Experimental, emerging, or low-activity repositories. Too new or uncertain to categorize confidently.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CLUSTERS SECTION -->
+      <section id="clusters">
+        <h2>Technical Clusters</h2>
+        <p>Clusters represent neighborhoods of related technical work, organized by function and ecosystem.</p>
+
+        <div class="cluster-grid">
+          <div class="cluster-card">
+            <div class="cluster-name">Kernel Systems</div>
+            <div class="cluster-description">Operating systems, compilers, runtime environments. The foundation layer.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Compiler Forges</div>
+            <div class="cluster-description">Language implementations, type systems, code generation tools.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Cloud Native</div>
+            <div class="cluster-description">Kubernetes, container orchestration, distributed systems infrastructure.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Infrastructure Automatons</div>
+            <div class="cluster-description">IaC, deployment, provisioning, and configuration management.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Telemetry Spires</div>
+            <div class="cluster-description">Monitoring, observability, metrics, logging, tracing.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Interface Colonies</div>
+            <div class="cluster-description">Frontend frameworks, UI libraries, component systems, design tools.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">API Foundries</div>
+            <div class="cluster-description">Backend frameworks, REST/GraphQL servers, middleware, API design.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Mobile Signal Fields</div>
+            <div class="cluster-description">Mobile frameworks, cross-platform tools, app development ecosystems.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Model Foundries</div>
+            <div class="cluster-description">Deep learning frameworks, tensor libraries, ML infrastructure.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Agentic Outposts</div>
+            <div class="cluster-description">LLM frameworks, agent systems, AI application platforms.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Archive Engines</div>
+            <div class="cluster-description">Databases, data structures, storage engines, persistence layers.</div>
+          </div>
+
+          <div class="cluster-card">
+            <div class="cluster-name">Archive Engines</div>
+            <div class="cluster-description">Search engines, analytics platforms, data warehouses.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTERACTIONS SECTION -->
+      <section id="interactions">
+        <h2>How to Interact</h2>
+
+        <table class="interaction-table">
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>How</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Select a Repository</td>
+              <td>Click on a node</td>
+              <td>Shows detailed metrics, nearby neighbors, and tags. Displays a spiral galaxy glow effect.</td>
+            </tr>
+            <tr>
+              <td>Search</td>
+              <td>Type in search box</td>
+              <td>Highlights matching repositories and centers the view on them.</td>
+            </tr>
+            <tr>
+              <td>Pan the Map</td>
+              <td>Drag with mouse</td>
+              <td>Moves the view around the galaxy without changing zoom.</td>
+            </tr>
+            <tr>
+              <td>Zoom In/Out</td>
+              <td>Scroll wheel or trackpad</td>
+              <td>Changes magnification. Star names scale automatically.</td>
+            </tr>
+            <tr>
+              <td>Filter by Civilization</td>
+              <td>Toggle buttons in left panel</td>
+              <td>Show/hide repositories of specific evolution patterns.</td>
+            </tr>
+            <tr>
+              <td>Toggle Overlays</td>
+              <td>Checkboxes in left panel</td>
+              <td>Display cluster nebulae or show nearest-neighbor connections.</td>
+            </tr>
+            <tr>
+              <td>Inspect Details</td>
+              <td>Click a repository</td>
+              <td>Right panel shows full information: metrics, technical neighborhood, DNA breakdown.</td>
+            </tr>
+            <tr>
+              <td>Hover</td>
+              <td>Move mouse over nodes</td>
+              <td>Shows tooltip with name and tags. Highlights the node.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- KEYWORDS SECTION -->
+      <section id="keywords">
+        <h2>Key Concepts</h2>
+
+        <div class="definition">
+          <p><strong>Technical DNA:</strong> The semantic and structural fingerprint of a repository. Includes language profile, dependency patterns, code organization, and readme signals. Used to position projects in the 2D atlas space.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Semantic Vector:</strong> A numerical representation of what a project does based on its description, topics, code patterns, and documentation. Similar vectors cluster nearby in the atlas.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Dependency Graph:</strong> The network of libraries, frameworks, and packages a repository relies on. Projects with similar dependencies tend to cluster together.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Craftsmanship Score:</strong> A heuristic combining code review depth, test coverage, documentation quality, and commit message coherence. Not a judgment of worth, but a signal of maintenance rigor.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Machine Influence Score:</strong> Detects generated or templated code patterns. High scores indicate boilerplate, scaffolding, or code generation. Used to identify factory-style projects.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Cluster:</strong> A neighborhood of related repositories grouped by technical similarity. Clusters have names (e.g., "Kernel Systems") and visual boundaries on the map. Each cluster represents a distinct technical domain.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Civilization:</strong> A development philosophy pattern across 5 types: Sigma (ancient), Autobots (augmented), Decepticons (fast), Quintessons (generated), Drifters (unclassified). Describes evolution style, not quality.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Nearest Neighbors:</strong> The 5 closest repositories in technical space. Not based on shared stars or follows, but on structural and semantic similarity. Shows your technical peers.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Confidence Score:</strong> A trust metric (0-100%) for how confident the atlas is about a repository's cluster assignment. Based on signal consistency and metric coherence.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Wrapping Map:</strong> The atlas edges wrap horizontally, creating a toroidal topology. You can scroll infinitely left or right and come back to where you started. This allows the entire ecosystem to be viewable at once.</p>
+        </div>
+
+        <div class="definition">
+          <p><strong>Static Data:</strong> All data is pre-computed and stored as JSON files. No API calls at runtime. This makes the atlas fast and works perfectly on GitHub Pages (no server needed).</p>
+        </div>
+      </section>
+
+      <footer class="project-footer">
+    <p>
+  Created by Sumit Kumar ·
+  <a href="https://sk1802.github.io">Portfolio</a>
+  </p>
+
+  <p>
+    Repository metadata derived from
+    <a href="https://www.kaggle.com/datasets/pelmers/github-repository-metadata-with-5-stars" target="_blank">
+      Kaggle GitHub Dataset
+    </a>
+  </p>
+
+  <p>
+    Current atlas coverage focuses on repositories with
+    5,000+ GitHub stars to maintain an explorable browser-scale map.
+  </p>
+
+  <p>
+    Inspired by the Map of GitHub project and reimagined as a
+    technical civilization atlas.
+  </p>
+  <p>
+    Source code licensed under the MIT License.
+  </p>
+
+  <p class="disclaimer">
+    Craftsmanship, Machine Influence, Stability, and Velocity are
+    heuristic signals intended for exploration and visualization,
+    not objective measures of software quality.
+  </p>
+</footer>
+    </div>
+  </body>
+</html>

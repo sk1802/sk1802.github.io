@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Software Civilization Atlas</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="atlas-shell">
+      <section class="map-stage" aria-label="Interactive technical map of GitHub repositories">
+        <canvas id="atlasCanvas"></canvas>
+
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Technical Map of GitHub</p>
+            <h1>Software Civilization Atlas</h1>
+          </div>
+          <div class="search-box">
+            <span aria-hidden="true">/</span>
+            <input id="searchInput" type="search" placeholder="Search repositories" autocomplete="off" />
+          </div>
+          <a href="info.html" class="info-link" title="Glossary & Help" aria-label="Open glossary and help">?</a>
+        </header>
+
+        <aside class="left-panel" aria-label="Map controls">
+          <div class="control-group">
+            <p class="label">Civilization</p>
+            <div id="civilizationFilters" class="filter-list"></div>
+          </div>
+          <div class="control-group">
+            <p class="label">Overlay</p>
+            <label class="toggle-row">
+              <input id="showClusters" type="checkbox" checked />
+              <span>Cluster nebulae</span>
+            </label>
+            <label class="toggle-row">
+              <input id="showLinks" type="checkbox" checked />
+              <span>Nearest neighbors</span>
+            </label>
+          </div>
+          <div class="control-group">
+            <p class="label">Zoom</p>
+            <input id="zoomRange" type="range" min="0.15" max="5" value="1" step="0.01" />
+          </div>
+        </aside>
+
+        <aside id="inspector" class="inspector" aria-live="polite"></aside>
+
+        <div id="tooltip" class="tooltip" role="status"></div>
+      </section>
+    </main>
+    <a href="info.html" class="atlas-help" title="Glossary & Concepts"> i </a>
+    <div class="atlas-copyright">
+    Software Civilization Atlas © 2026 Sumit Kumar
+    <a href="https://sk1802.github.io">Portfolio</a>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
